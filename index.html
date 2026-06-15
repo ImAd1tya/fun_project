@@ -108,9 +108,9 @@
     gap: 16px;
     align-items: center;
     justify-content: center;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     margin-top: 2rem;
-    position: relative;
+    position: static;
     min-height: 56px;
   }
   .btn-yes {
@@ -139,8 +139,8 @@
     letter-spacing: 1px;
     text-transform: uppercase;
     cursor: pointer;
-    transition: opacity 0.3s;
-    position: absolute;
+    transition: opacity 0.3s, transform 0.25s ease;
+    position: fixed;
   }
   .btn-sure {
     background: var(--rose);
@@ -296,22 +296,33 @@
 
   /* ── Runaway No button ── */
   const noBtn = document.getElementById('no-btn');
-  const area  = document.getElementById('btn-area');
+  const yesBtn = document.querySelector('.btn-yes');
   let noMoves = 0;
+  let noPlaced = false;
+
+  function placeNoNextToYes() {
+    if (noPlaced) return;
+    noPlaced = true;
+    const r = yesBtn.getBoundingClientRect();
+    noBtn.style.top  = r.top + 'px';
+    noBtn.style.left = (r.right + 16) + 'px';
+    noBtn.style.opacity = '1';
+  }
 
   function moveNo() {
     noMoves++;
-    const aw = area.offsetWidth;
-    const ah = area.offsetHeight;
     const bw = noBtn.offsetWidth;
     const bh = noBtn.offsetHeight;
-    const maxX = aw / 2 - bw / 2 - 10;
-    const maxY = 60;
-    const x = (Math.random() * 2 - 1) * maxX;
-    const y = (Math.random() * 2 - 0.5) * maxY;
-    noBtn.style.transform = `translate(${x}px, ${y}px)`;
-    if (noMoves > 2) noBtn.style.opacity = Math.max(0.08, 1 - noMoves * 0.14);
+    const maxX = window.innerWidth  - bw - 16;
+    const maxY = window.innerHeight - bh - 16;
+    const x = Math.floor(Math.random() * maxX);
+    const y = Math.floor(Math.random() * maxY);
+    noBtn.style.left = x + 'px';
+    noBtn.style.top  = y + 'px';
+    if (noMoves > 3) noBtn.style.opacity = Math.max(0.08, 1 - noMoves * 0.13);
   }
+
+  window.addEventListener('load', () => setTimeout(placeNoNextToYes, 50));
 
   /* ── Date confirmation ── */
   function confirmDate() {
