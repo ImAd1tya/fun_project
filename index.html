@@ -225,6 +225,27 @@
 <div class="petal-layer" id="petals"></div>
 <div class="bg-motif">🌹</div>
 
+<!-- Admin Panel -->
+<div id="admin" class="page" style="align-items:stretch; padding:2rem 1.5rem;">
+  <div style="max-width:480px; width:100%; margin:0 auto;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem;">
+      <div>
+        <p class="eyebrow" style="margin-bottom:0.2rem;">Secret garden</p>
+        <h1 style="font-size:22px;">Dates picked &#127801;</h1>
+      </div>
+      <button onclick="goTo('p1')" style="background:none;border:none;cursor:pointer;font-size:22px;color:var(--muted);">&#x2715;</button>
+    </div>
+    <div id="admin-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+    <div id="admin-empty" style="display:none;text-align:center;padding:2rem 0;">
+      <div style="font-size:40px;margin-bottom:0.5rem;">&#127800;</div>
+      <p class="sub">No dates picked yet.</p>
+    </div>
+    <div style="margin-top:1.5rem;text-align:right;">
+      <button onclick="clearDates()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--muted);text-decoration:underline;letter-spacing:0.5px;">Clear all</button>
+    </div>
+  </div>
+</div>
+
 <!-- Page 1: Will you go on a date? -->
 <div id="p1" class="page active">
   <p class="eyebrow">A question for you</p>
@@ -330,9 +351,50 @@
     if (!val) { alert('Please pick a date! 🌹'); return; }
     const d = new Date(val + 'T12:00:00');
     const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    document.getElementById('date-out').textContent = d.toLocaleDateString(undefined, opts);
+    const label = d.toLocaleDateString(undefined, opts);
+    document.getElementById('date-out').textContent = label;
+
+    /* Save to localStorage */
+    const saved = JSON.parse(localStorage.getItem('datePicks') || '[]');
+    saved.push(label);
+    localStorage.setItem('datePicks', JSON.stringify(saved));
+
     goTo('p4');
   }
+
+  /* ── Admin panel ── */
+  function openAdmin() {
+    const saved = JSON.parse(localStorage.getItem('datePicks') || '[]');
+    const list  = document.getElementById('admin-list');
+    const empty = document.getElementById('admin-empty');
+    list.innerHTML = '';
+    if (saved.length === 0) {
+      empty.style.display = 'block';
+      list.style.display  = 'none';
+    } else {
+      empty.style.display = 'none';
+      list.style.display  = 'flex';
+      saved.forEach((d, i) => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;gap:12px;background:var(--white);border:1px solid #e8cdd5;border-radius:999px;padding:12px 20px;font-size:15px;';
+        row.innerHTML = '<span style="color:var(--rose);font-size:18px;">&#127801;</span><span style="color:var(--dark);flex:1;">' + d + '</span><span style="font-size:12px;color:var(--muted);">#' + (i+1) + '</span>';
+        list.appendChild(row);
+      });
+    }
+    goTo('admin');
+  }
+
+  function clearDates() {
+    if (confirm('Clear all saved dates?')) {
+      localStorage.removeItem('datePicks');
+      openAdmin();
+    }
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'a' || e.key === 'A') openAdmin();
+  });
+
 </script>
 </body>
 </html>
